@@ -36,7 +36,7 @@ function resetTimer() {
     elapsedTime = 0;
     timeDisplay.textContent = '00:00:00';
     currentAgeDisplay.textContent = '-';
-    ageEmoji.textContent = '👶';
+    ageEmoji.textContent = '🧑🏻👩🏻';
     startButton.textContent = 'Старт';
 }
 
@@ -79,11 +79,11 @@ function updateTime() {
 
     // Обновляем эмодзи в зависимости от возраста
     if (currentAge < 30) {
-        ageEmoji.textContent = '👶';
+        ageEmoji.textContent = '🧑🏻👩🏻'; // Молодые люди
     } else if (currentAge < 60) {
-        ageEmoji.textContent = '👨';
+        ageEmoji.textContent = '👨🏻👩🏻'; // Взрослые
     } else {
-        ageEmoji.textContent = '👴';
+        ageEmoji.textContent = '👴🏻👵🏻'; // Пожилые
     }
 
     // Проверяем, не закончилось ли время
