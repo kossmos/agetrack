@@ -9,6 +9,11 @@ const timeDisplay = document.querySelector('.time');
 const currentAgeDisplay = document.getElementById('currentAge');
 const ageEmoji = document.getElementById('ageEmoji');
 const finalAgeDisplay = document.getElementById('finalAgeDisplay');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+const elapsedTimeDisplay = document.getElementById('elapsedTime');
+const remainingTimeDisplay = document.getElementById('remainingTime');
+const themeSwitch = document.getElementById('checkbox');
 
 // Функция для правильного склонения возраста
 function getAgeString(years, months) {
@@ -29,6 +34,11 @@ function getAgeString(years, months) {
     return `${years} ${yearWord} ${months} ${monthWord}`;
 }
 
+// Функция для форматирования времени
+function formatTime(hours, minutes, seconds) {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
 // Функция для сброса таймера
 function resetTimer() {
     clearInterval(timer);
@@ -38,6 +48,10 @@ function resetTimer() {
     currentAgeDisplay.textContent = '-';
     ageEmoji.textContent = '🧑🏻👩🏻';
     startButton.textContent = 'Старт';
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
+    elapsedTimeDisplay.textContent = '00:00:00';
+    remainingTimeDisplay.textContent = document.getElementById('gameHours').value.padStart(2, '0') + ':00:00';
 }
 
 // Функция для расчета финального возраста
@@ -58,6 +72,48 @@ document.getElementById('gameHours').addEventListener('input', calculateFinalAge
 // Инициализируем финальный возраст при загрузке
 calculateFinalAge();
 
+// Функция для обновления прогресс-бара
+function updateProgress(hours, minutes, seconds) {
+    const gameHours = parseInt(document.getElementById('gameHours').value);
+    const totalMilliseconds = gameHours * 3600000; // общее время в миллисекундах
+    const currentMilliseconds = hours * 3600000 + minutes * 60000 + seconds * 1000; // текущее время в миллисекундах
+    const progress = (currentMilliseconds / totalMilliseconds) * 100;
+    
+    // Обновляем прогресс-бар
+    progressBar.style.width = `${Math.min(progress, 100)}%`;
+    progressText.textContent = `${Math.round(Math.min(progress, 100))}%`;
+    
+    // Обновляем прошедшее время
+    elapsedTimeDisplay.textContent = formatTime(hours, minutes, seconds);
+    
+    // Обновляем оставшееся время
+    const remainingMilliseconds = Math.max(0, totalMilliseconds - currentMilliseconds);
+    const remainingHours = Math.floor(remainingMilliseconds / 3600000);
+    const remainingMinutes = Math.floor((remainingMilliseconds % 3600000) / 60000);
+    const remainingSecs = Math.floor((remainingMilliseconds % 60000) / 1000);
+    remainingTimeDisplay.textContent = formatTime(remainingHours, remainingMinutes, remainingSecs);
+}
+
+// Обработчик переключения темы
+themeSwitch.addEventListener('change', function() {
+    if (this.checked) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+    }
+});
+
+// Проверка сохранённой темы при загрузке
+const currentTheme = localStorage.getItem('theme');
+if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (currentTheme === 'dark') {
+        themeSwitch.checked = true;
+    }
+}
+
 function updateTime() {
     const now = new Date();
     const diff = now - startTime + elapsedTime;
@@ -65,7 +121,10 @@ function updateTime() {
     const minutes = Math.floor((diff % 3600000) / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
 
-    timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    timeDisplay.textContent = formatTime(hours, minutes, seconds);
+
+    // Обновляем прогресс
+    updateProgress(hours, minutes, seconds);
 
     // Обновляем возраст
     const startAge = parseInt(document.getElementById('startAge').value);

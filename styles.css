@@ -4,9 +4,30 @@
     box-sizing: border-box;
 }
 
+/* Основные стили */
+:root {
+    --primary-color: #4CAF50;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --clock-background: #f5f5f5;
+    --border-color: #dddddd;
+}
+
+[data-theme="dark"] {
+    --primary-color: #66BB6A;
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+    --clock-background: #2d2d2d;
+    --border-color: #404040;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -14,12 +35,12 @@ body {
 }
 
 .container {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     max-width: 800px;
-    width: 90%;
+    margin: 0 auto;
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .clock-container {
@@ -28,8 +49,11 @@ body {
 }
 
 .clock {
-    font-size: 2rem;
-    color: #333;
+    background-color: var(--clock-background);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .time {
@@ -49,7 +73,10 @@ body {
 }
 
 .settings {
-    margin-top: 2rem;
+    background-color: var(--clock-background);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
 h2 {
@@ -71,7 +98,7 @@ h2 {
 .final-age {
     margin: 1.5rem 0;
     padding: 1rem;
-    background-color: #f8f9fa;
+    background-color: var(--clock-background);
     border-radius: 4px;
     text-align: center;
 }
@@ -79,13 +106,13 @@ h2 {
 .final-age label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #666;
+    color: var(--text-color);
     font-weight: bold;
 }
 
 #finalAgeDisplay {
     font-size: 1.5rem;
-    color: #333;
+    color: var(--text-color);
     font-weight: bold;
 }
 
@@ -95,12 +122,12 @@ label {
     color: #666;
 }
 
-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
+input[type="number"] {
+    padding: 8px;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    font-size: 1rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 .buttons {
@@ -110,13 +137,17 @@ input {
 }
 
 button {
-    flex: 1;
-    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
     border: none;
+    padding: 10px 20px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1rem;
     transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
 }
 
 #startButton {
@@ -153,4 +184,115 @@ button {
 .copyright {
     color: #666;
     font-size: 0.9rem;
+}
+
+/* Стили для переключателя темы */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 34px;
+    position: relative;
+    width: 60px;
+    margin-right: 10px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 26px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 26px;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Стили для прогресс-бара */
+.progress-container {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    margin: 20px 0;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-color);
+    margin-top: 5px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-color);
+    padding: 0 5px;
+}
+
+.progress-info span {
+    flex: 1;
+    text-align: center;
+}
+
+#elapsedTime {
+    text-align: left;
+}
+
+#remainingTime {
+    text-align: right;
+}
+
+#progressText {
+    font-weight: bold;
 } 

@@ -8,12 +8,27 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <em>Тёмная тема</em>
+    </div>
     <div class="container">
         <div class="clock-container">
             <div class="clock">
                 <div class="time">00:00:00</div>
                 <div class="age">Возраст: <span id="currentAge">-</span></div>
                 <div class="emoji" id="ageEmoji">🧑🏻👩🏻</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="elapsedTime">00:00:00</span>
+                    <span id="progressText">0%</span>
+                    <span id="remainingTime">00:00:00</span>
+                </div>
             </div>
         </div>
 
