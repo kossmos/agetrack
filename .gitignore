@@ -1,1 +1,21 @@
+# Системные файлы
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Временные файлы
+*.log
+*.tmp
+*.swp
+*~
+
+# Папки зависимостей
+node_modules/
+bower_components/
+
+# Файлы сборки и дистрибутива
+dist/
+build/
+*.zip
+*.tar.gz
