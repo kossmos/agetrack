@@ -376,6 +376,12 @@ input:checked + .slider:before {
     .footer {
         margin-top: 1.5rem;
     }
+    
+    .install-button {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+    }
 }
 
 /* Для очень маленьких экранов */
@@ -410,4 +416,31 @@ input:checked + .slider:before {
     .copyright {
         font-size: 0.8rem;
     }
+}
+
+/* Стили для кнопки установки */
+.install-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px auto 20px;
+    display: block;
+    font-size: 1rem;
+    transition: all 0.3s;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.install-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.install-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
 } 

@@ -173,4 +173,76 @@ resetButton.addEventListener('click', function() {
     if (confirm('Вы уверены, что хотите сбросить таймер? Это действие нельзя отменить.')) {
         resetTimer();
     }
+});
+
+// Регистрация Service Worker для PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('ServiceWorker зарегистрирован успешно:', registration.scope);
+            })
+            .catch(error => {
+                console.log('Ошибка регистрации ServiceWorker:', error);
+            });
+    });
+}
+
+// Добавление функциональности установки PWA
+let deferredPrompt;
+const installButton = document.getElementById('installPWA');
+installButton.style.display = 'none'; // Скрываем кнопку по умолчанию
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Предотвращаем стандартное всплывающее окно установки
+    e.preventDefault();
+    // Сохраняем событие для использования позже
+    deferredPrompt = e;
+    // Показываем кнопку установки
+    installButton.style.display = 'block';
+});
+
+// Обработчик события при успешной установке
+window.addEventListener('appinstalled', (event) => {
+    console.log('Приложение успешно установлено');
+    installButton.style.display = 'none';
+    // Можно показать сообщение о успешной установке
+    alert('Приложение успешно установлено!');
+});
+
+// Обработчик клика по кнопке установки
+installButton.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        // Показываем диалог установки
+        deferredPrompt.prompt();
+        // Ожидаем результат
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Результат установки: ${outcome}`);
+        // Обнуляем сохраненное событие
+        deferredPrompt = null;
+        
+        if (outcome === 'accepted') {
+            installButton.style.display = 'none';
+        }
+    } else {
+        // Если deferredPrompt не доступен, предлагаем инструкции по установке
+        let message = '';
+        
+        // Определяем браузер и устройство
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/.test(userAgent);
+        const isAndroid = /android/.test(userAgent);
+        const isSafari = /safari/.test(userAgent);
+        const isChrome = /chrome/.test(userAgent);
+        
+        if (isIOS && isSafari) {
+            message = 'Для установки на iOS: нажмите кнопку "Поделиться" внизу экрана, затем "На экран «Домой»"';
+        } else if (isAndroid && isChrome) {
+            message = 'Для установки на Android: нажмите на три точки в правом верхнем углу, затем "Установить приложение"';
+        } else {
+            message = 'Для установки: откройте сайт в Chrome или Safari на мобильном устройстве';
+        }
+        
+        alert(message);
+    }
 }); 
