@@ -160,11 +160,17 @@ startButton.addEventListener('click', () => {
         isRunning = true;
         startButton.textContent = 'Пауза';
     } else {
-        clearInterval(timer);
-        elapsedTime += new Date() - startTime;
-        isRunning = false;
-        startButton.textContent = 'Старт';
+        if (confirm('Вы уверены, что хотите поставить таймер на паузу?')) {
+            clearInterval(timer);
+            elapsedTime += new Date() - startTime;
+            isRunning = false;
+            startButton.textContent = 'Старт';
+        }
     }
 });
 
-resetButton.addEventListener('click', resetTimer); 
+resetButton.addEventListener('click', function() {
+    if (confirm('Вы уверены, что хотите сбросить таймер? Это действие нельзя отменить.')) {
+        resetTimer();
+    }
+}); 
