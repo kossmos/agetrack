@@ -182,8 +182,20 @@ button:hover {
 }
 
 .copyright {
+    margin-top: 1rem;
+    text-align: center;
     color: #666;
     font-size: 0.9rem;
+}
+
+.copyright a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.copyright a:hover {
+    text-decoration: underline;
 }
 
 /* Стили для переключателя темы */
