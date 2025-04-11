@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finage</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="clock-container">
+            <div class="clock">
+                <div class="time">00:00:00</div>
+                <div class="age">Возраст: <span id="currentAge">-</span></div>
+                <div class="emoji" id="ageEmoji">👶</div>
+            </div>
+        </div>
+
+        <div class="settings">
+            <h2>Настройки</h2>
+            <div class="settings-row">
+                <div class="input-group">
+                    <label for="startAge">Начальный возраст (лет):</label>
+                    <input type="number" id="startAge" value="20" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="yearsPerHour">Лет за 1 час:</label>
+                    <input type="number" id="yearsPerHour" value="15" min="1">
+                </div>
+                <div class="input-group">
+                    <label for="gameHours">Длительность игры (часов):</label>
+                    <input type="number" id="gameHours" value="3" min="1">
+                </div>
+            </div>
+            <div class="final-age">
+                <label>Финальный возраст:</label>
+                <div id="finalAgeDisplay">65 лет</div>
+            </div>
+            <div class="buttons">
+                <button id="startButton">Старт</button>
+                <button id="resetButton">Сброс</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p class="description">Приложение для визуализации возраста в игре "Денежный поток". Каждый час реального времени соответствует определенному количеству лет жизни персонажа.</p>
+            <div class="copyright">© 2025 Finage | Автор: Кравчук Юрий</div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
