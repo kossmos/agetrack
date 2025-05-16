@@ -131,15 +131,17 @@ function updateTime() {
     const yearsPerHour = parseInt(document.getElementById('yearsPerHour').value);
     const gameHours = parseInt(document.getElementById('gameHours').value);
 
-    const currentAge = startAge + (hours * yearsPerHour);
-    const months = Math.floor((diff % 3600000) / (3600000 / 12) * yearsPerHour);
+    // Новый корректный расчёт возраста
+    const totalGameYears = (diff / 3600000) * yearsPerHour;
+    const totalYears = startAge + Math.floor(totalGameYears);
+    const totalMonths = Math.floor((totalGameYears - Math.floor(totalGameYears)) * 12);
 
-    currentAgeDisplay.textContent = getAgeString(currentAge, months);
+    currentAgeDisplay.textContent = getAgeString(totalYears, totalMonths);
 
     // Обновляем эмодзи в зависимости от возраста
-    if (currentAge < 30) {
+    if (totalYears < 30) {
         ageEmoji.textContent = '🧑🏻👩🏻'; // Молодые люди
-    } else if (currentAge < 60) {
+    } else if (totalYears < 60) {
         ageEmoji.textContent = '👨🏻👩🏻'; // Взрослые
     } else {
         ageEmoji.textContent = '👴🏻👵🏻'; // Пожилые
