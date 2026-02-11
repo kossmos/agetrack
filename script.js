@@ -16,6 +16,41 @@ const progressText = document.getElementById('progressText');
 const elapsedTimeDisplay = document.getElementById('elapsedTime');
 const remainingTimeDisplay = document.getElementById('remainingTime');
 const themeSwitch = document.getElementById('checkbox');
+const INPUT_DEFAULTS = {
+    startAge: 20,
+    yearsPerHour: 15,
+    gameHours: 3
+};
+
+function getSafeNumberInputValue(id) {
+    const input = document.getElementById(id);
+    const fallback = INPUT_DEFAULTS[id] ?? 0;
+    const min = input.min === '' ? -Infinity : Number(input.min);
+    const max = input.max === '' ? Infinity : Number(input.max);
+    const rawValue = Number(input.value);
+
+    let value = Number.isFinite(rawValue) ? Math.floor(rawValue) : fallback;
+    value = Math.max(min, Math.min(max, value));
+
+    if (!Number.isFinite(value)) {
+        return fallback;
+    }
+
+    return value;
+}
+
+function normalizeNumberInput(id) {
+    const input = document.getElementById(id);
+    const normalized = getSafeNumberInputValue(id);
+    const current = Number(input.value);
+    const isDifferent = !Number.isFinite(current) || Math.floor(current) !== normalized;
+
+    if (isDifferent) {
+        input.value = String(normalized);
+    }
+
+    return normalized;
+}
 
 // Функция для правильного склонения возраста
 function getAgeString(years, months) {
@@ -53,14 +88,15 @@ function resetTimer() {
     progressBar.style.width = '0%';
     progressText.textContent = '0%';
     elapsedTimeDisplay.textContent = '00:00:00';
-    remainingTimeDisplay.textContent = document.getElementById('gameHours').value.padStart(2, '0') + ':00:00';
+    const gameHours = getSafeNumberInputValue('gameHours');
+    remainingTimeDisplay.textContent = formatTime(gameHours, 0, 0);
 }
 
 // Функция для расчета финального возраста
 function calculateFinalAge() {
-    const startAge = parseInt(document.getElementById('startAge').value);
-    const yearsPerHour = parseInt(document.getElementById('yearsPerHour').value);
-    const gameHours = parseInt(document.getElementById('gameHours').value);
+    const startAge = getSafeNumberInputValue('startAge');
+    const yearsPerHour = getSafeNumberInputValue('yearsPerHour');
+    const gameHours = getSafeNumberInputValue('gameHours');
     
     const finalAge = startAge + (yearsPerHour * gameHours);
     finalAgeDisplay.textContent = getAgeString(finalAge, 0);
@@ -76,10 +112,10 @@ calculateFinalAge();
 
 // Функция для обновления прогресс-бара
 function updateProgress(hours, minutes, seconds) {
-    const gameHours = parseInt(document.getElementById('gameHours').value);
+    const gameHours = getSafeNumberInputValue('gameHours');
     const totalMilliseconds = gameHours * 3600000; // общее время в миллисекундах
     const currentMilliseconds = hours * 3600000 + minutes * 60000 + seconds * 1000; // текущее время в миллисекундах
-    const progress = (currentMilliseconds / totalMilliseconds) * 100;
+    const progress = totalMilliseconds > 0 ? (currentMilliseconds / totalMilliseconds) * 100 : 0;
     
     // Обновляем прогресс-бар
     progressBar.style.width = `${Math.min(progress, 100)}%`;
@@ -129,9 +165,9 @@ function updateTime() {
     updateProgress(hours, minutes, seconds);
 
     // Обновляем возраст
-    const startAge = parseInt(document.getElementById('startAge').value);
-    const yearsPerHour = parseInt(document.getElementById('yearsPerHour').value);
-    const gameHours = parseInt(document.getElementById('gameHours').value);
+    const startAge = getSafeNumberInputValue('startAge');
+    const yearsPerHour = getSafeNumberInputValue('yearsPerHour');
+    const gameHours = getSafeNumberInputValue('gameHours');
 
     // Новый корректный расчёт возраста
     const totalGameYears = (diff / 3600000) * yearsPerHour;
@@ -177,6 +213,17 @@ resetButton.addEventListener('click', function() {
     if (confirm('Вы уверены, что хотите сбросить таймер? Это действие нельзя отменить.')) {
         resetTimer();
     }
+});
+
+['startAge', 'yearsPerHour', 'gameHours'].forEach(id => {
+    const input = document.getElementById(id);
+    input.addEventListener('blur', () => {
+        normalizeNumberInput(id);
+        calculateFinalAge();
+        if (!isRunning) {
+            remainingTimeDisplay.textContent = formatTime(getSafeNumberInputValue('gameHours'), 0, 0);
+        }
+    });
 });
 
 // Регистрация Service Worker для PWA
