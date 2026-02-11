@@ -153,7 +153,7 @@ if (currentTheme) {
 }
 
 function updateTime() {
-    const diff = dayjs().diff(startTime) + elapsedTime;
+    const diff = Math.max(0, dayjs().diff(startTime) + elapsedTime);
     const duration = dayjs.duration(diff);
     const hours = Math.floor(duration.asHours());
     const minutes = duration.minutes();
@@ -171,8 +171,9 @@ function updateTime() {
 
     // Новый корректный расчёт возраста
     const totalGameYears = (diff / 3600000) * yearsPerHour;
-    const totalYears = startAge + Math.floor(totalGameYears);
-    const totalMonths = Math.floor((totalGameYears - Math.floor(totalGameYears)) * 12);
+    const totalElapsedMonths = Math.max(0, Math.floor(totalGameYears * 12));
+    const totalYears = startAge + Math.floor(totalElapsedMonths / 12);
+    const totalMonths = totalElapsedMonths % 12;
 
     currentAgeDisplay.textContent = getAgeString(totalYears, totalMonths);
 

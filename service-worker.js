@@ -1,4 +1,4 @@
-const STATIC_CACHE_NAME = 'agetrack-static-v2';
+const STATIC_CACHE_NAME = 'agetrack-static-v3';
 const RUNTIME_CACHE_NAME = 'agetrack-runtime-v1';
 const MAX_RUNTIME_CACHE_ITEMS = 50;
 const ASSETS_TO_CACHE = [
