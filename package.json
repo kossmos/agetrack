@@ -1,0 +1,43 @@
+{
+  "name": "agetrack",
+  "version": "1.0.0",
+  "description": "Таймер возраста для игры \"Денежный поток\" (Cashflow). Визуализирует старение персонажа в процессе игры.",
+  "main": "script.js",
+  "files": [
+    "index.html",
+    "script.js",
+    "styles.css",
+    "service-worker.js",
+    "site.webmanifest",
+    "README.md",
+    "LICENSE",
+    "favicon.svg",
+    "favicon-96x96.png",
+    "favicon.ico",
+    "favicon.png",
+    "apple-touch-icon.png",
+    "web-app-manifest-192x192.png",
+    "web-app-manifest-512x512.png"
+  ],
+  "scripts": {
+    "test": "echo \"No tests configured\"",
+    "prepublishOnly": "npm pack --dry-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kossmos/agetrack.git"
+  },
+  "author": "Кравчук Юрий",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kossmos/agetrack/issues"
+  },
+  "homepage": "https://github.com/kossmos/agetrack#readme",
+  "keywords": [
+    "cashflow",
+    "agetrack",
+    "timer",
+    "age",
+    "pwa"
+  ]
+}
