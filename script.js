@@ -193,15 +193,20 @@ if ('serviceWorker' in navigator) {
 // Добавление функциональности установки PWA
 let deferredPrompt;
 const installButton = document.getElementById('installPWA');
-installButton.style.display = 'none'; // Скрываем кнопку по умолчанию
+
+// Скрываем кнопку, если приложение уже запущено как установленное PWA
+const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+if (isStandalone) {
+    installButton.style.display = 'none';
+}
 
 window.addEventListener('beforeinstallprompt', (e) => {
     // Предотвращаем стандартное всплывающее окно установки
     e.preventDefault();
     // Сохраняем событие для использования позже
     deferredPrompt = e;
-    // Показываем кнопку установки
-    installButton.style.display = 'block';
 });
 
 // Обработчик события при успешной установке
