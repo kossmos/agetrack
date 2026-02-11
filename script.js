@@ -3,6 +3,8 @@ let startTime;
 let isRunning = false;
 let elapsedTime = 0;
 
+dayjs.extend(dayjs_plugin_duration);
+
 const startButton = document.getElementById('startButton');
 const resetButton = document.getElementById('resetButton');
 const timeDisplay = document.querySelector('.time');
@@ -115,11 +117,11 @@ if (currentTheme) {
 }
 
 function updateTime() {
-    const now = new Date();
-    const diff = now - startTime + elapsedTime;
-    const hours = Math.floor(diff / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
+    const diff = dayjs().diff(startTime) + elapsedTime;
+    const duration = dayjs.duration(diff);
+    const hours = Math.floor(duration.asHours());
+    const minutes = duration.minutes();
+    const seconds = duration.seconds();
 
     timeDisplay.textContent = formatTime(hours, minutes, seconds);
 
@@ -157,14 +159,14 @@ function updateTime() {
 
 startButton.addEventListener('click', () => {
     if (!isRunning) {
-        startTime = new Date();
+        startTime = dayjs();
         timer = setInterval(updateTime, 1000);
         isRunning = true;
         startButton.textContent = 'Пауза';
     } else {
         if (confirm('Вы уверены, что хотите поставить таймер на паузу?')) {
             clearInterval(timer);
-            elapsedTime += new Date() - startTime;
+            elapsedTime += dayjs().diff(startTime);
             isRunning = false;
             startButton.textContent = 'Старт';
         }
