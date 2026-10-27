@@ -16,72 +16,40 @@
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
-    <meta name="theme-color" content="#4CAF50">
+    <meta name="theme-color" content="#236343">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider round"></div>
-        </label>
-        <em>Тёмная тема</em>
-    </div>
-    <div class="container">
-        <div class="clock-container">
-            <div class="clock">
-                <div class="time">00:00:00</div>
-                <div class="age">Возраст: <span id="currentAge">-</span></div>
-                <div class="emoji" id="ageEmoji">🧑🏻👩🏻</div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
-                <div class="progress-info">
-                    <span id="elapsedTime">00:00:00</span>
-                    <span id="progressText">0%</span>
-                    <span id="remainingTime">00:00:00</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="settings">
-            <h2>Настройки</h2>
+    <main class="container">
+        <header class="header">
+            <a class="brand" href="./" aria-label="Agetrack — главная">age<span>track</span><span class="brand-dot">●</span></a>
+            <label class="theme-toggle" for="checkbox"><input type="checkbox" id="checkbox"> Тёмная тема</label>
+        </header>
+        <div class="intro"><p class="eyebrow">ДЕНЕЖНЫЙ ПОТОК</p><h1>Время вашей игры</h1><p>Следите за возрастом, пока строите свою стратегию.</p></div>
+        <section class="clock" aria-label="Текущая игра">
+            <div id="status" class="status" role="status">Готовы начать?</div>
+            <p class="age-label">Возраст персонажа</p>
+            <div class="age" id="currentAge">20 лет</div>
+            <div class="emoji" id="ageEmoji" aria-hidden="true">🧑🏻 👩🏻</div>
+            <div class="timer-label">Время в игре</div>
+            <div class="time" id="timeDisplay">00:00:00</div>
+            <div class="progress-container" id="progressTrack" role="progressbar" aria-label="Прогресс игры" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-info"><span>Прошло <b id="elapsedTime">00:00:00</b></span><strong id="progressText">0%</strong><span>Осталось <b id="remainingTime">03:00:00</b></span></div>
+            <div class="buttons"><button id="startButton">Начать игру</button><button id="resetButton" class="secondary" disabled>Сбросить</button></div>
+        </section>
+        <section class="settings" aria-labelledby="settingsTitle">
+            <div class="section-heading"><h2 id="settingsTitle">Параметры игры</h2><span>Ваш темп, ваши правила</span></div>
             <div class="settings-row">
-                <div class="input-group">
-                    <label for="startAge">Начальный возраст (лет):</label>
-                    <input type="number" id="startAge" value="20" min="0">
-                </div>
-                <div class="input-group">
-                    <label for="yearsPerHour">Лет за 1 час:</label>
-                    <input type="number" id="yearsPerHour" value="15" min="1">
-                </div>
-                <div class="input-group">
-                    <label for="gameHours">Длительность игры (часов):</label>
-                    <input type="number" id="gameHours" value="3" min="1">
-                </div>
+                <div class="input-group"><label for="startAge">Начальный возраст</label><div class="input-wrap"><input type="number" id="startAge" value="20" min="0" max="120" step="1"><span>лет</span></div></div>
+                <div class="input-group"><label for="yearsPerHour">Скорость старения</label><div class="input-wrap"><input type="number" id="yearsPerHour" value="15" min="1" max="100" step="1"><span>лет / час</span></div></div>
+                <div class="input-group"><label for="gameHours">Длительность игры</label><div class="input-wrap"><input type="number" id="gameHours" value="3" min="0.25" max="24" step="0.25"><span>часа</span></div></div>
             </div>
-            <div class="final-age">
-                <label>Финальный возраст:</label>
-                <div id="finalAgeDisplay">65 лет</div>
-            </div>
-            <div class="buttons">
-                <button id="startButton">Старт</button>
-                <button id="resetButton">Сброс</button>
-            </div>
-        </div>
-
-        <div class="footer">
-            <button id="installPWA" class="install-button">Установить приложение</button>
-            <p class="description">Приложение для визуализации возраста в игре "Денежный поток". Каждый час реального времени соответствует определенному количеству лет жизни персонажа.</p>
-            <div class="copyright">
-                © 2025 Agetrack | Автор: Кравчук Юрий | 
-                <a href="https://github.com/kossmos/agetrack" target="_blank" rel="noopener noreferrer">GitHub</a> |
-                <a href="https://github.com/kossmos/agetrack/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
-            </div>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/duration.js"></script>
+            <p id="settingsHint" class="hint"></p>
+            <div class="final-age"><span>Возраст к концу игры</span><strong id="finalAgeDisplay">65 лет</strong></div>
+        </section>
+        <p id="storageNotice" class="notice" role="status" hidden>Сохранение недоступно в этом браузере. Не закрывайте страницу во время игры.</p>
+        <footer class="footer"><p>Большие решения начинаются с понимания времени.</p><button id="installPWA" class="install-button">Установить приложение ↗</button><div class="copyright">© 2026 Agetrack · Кравчук Юрий <a href="https://github.com/kossmos/agetrack" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
+    </main>
     <script src="script.js"></script>
     <!-- Yandex.Metrika counter -->
 <script type="text/javascript" >

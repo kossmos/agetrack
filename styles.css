@@ -1,446 +1,72 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+:root { color-scheme: light; --bg: #f5f5f0; --surface: #fff; --text: #253a30; --muted: #68756b; --line: #dce3da; --accent: #236343; --soft: #eaf1e7; --field: #fafbf8; }
+[data-theme="dark"] { color-scheme: dark; --bg: #141c17; --surface: #1d2921; --text: #edf3e9; --muted: #abb9ab; --line: #3c4c40; --accent: #a8d7ae; --soft: #2e4133; --field: #17221b; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 0 24px; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; }
+.container { max-width: 860px; margin: auto; }
+.header { display: flex; align-items: center; justify-content: space-between; min-height: 92px; border-bottom: 1px solid var(--line); gap: 16px; }
+.brand { color: var(--text); font-size: 26px; font-weight: 750; letter-spacing: -1.3px; text-decoration: none; }
+.brand > span:first-child { font-weight: 400; }
+.brand-dot { color: var(--accent); font-size: 12px; margin-left: 5px; }
+.theme-toggle { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; cursor: pointer; }
+.theme-toggle input { accent-color: var(--accent); width: 18px; height: 18px; }
+.intro { padding: 38px 0 28px; }
+.eyebrow { font-size: 11px; letter-spacing: 2px; font-weight: 700; color: var(--accent); }
+h1 { font-size: clamp(28px, 5vw, 38px); line-height: 1.2; letter-spacing: -1.3px; margin: 10px 0; }
+.intro > p:last-child { color: var(--muted); margin-bottom: 0; font-size: 15px; }
+.clock { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 28px 40px 30px; }
+.status { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; background: var(--soft); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--accent); }
+.status:before { content: ''; height: 6px; width: 6px; border-radius: 50%; background: currentColor; }
+.status[data-state="running"]:before { box-shadow: 0 0 0 3px var(--line); }
+.age-label { margin: 25px 0 3px; color: var(--muted); font-size: 14px; }
+.age { font-size: clamp(25px, 5vw, 48px); font-weight: 650; letter-spacing: -1.5px; line-height: 1.3; overflow-wrap: anywhere; }
+.emoji { font-size: 44px; margin: 14px 0 20px; }
+.timer-label { color: var(--muted); font-size: 12px; }
+.time { font-size: 29px; font-weight: 500; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+.progress-container { height: 7px; border-radius: 8px; background: var(--soft); margin: 24px 0 10px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width .2s; }
+.progress-info { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress-info b { font-weight: 500; margin-left: 4px; color: var(--text); }
+.buttons { display: flex; gap: 12px; margin-top: 25px; }
+button { font: inherit; font-size: 14px; font-weight: 600; min-height: 48px; border-radius: 10px; padding: 12px 20px; cursor: pointer; border: 1px solid transparent; background: var(--accent); color: var(--surface); }
+button:hover:not(:disabled) { filter: brightness(.92); }
+button:disabled { opacity: .5; cursor: default; }
+#startButton { flex: 2; }
+.secondary { flex: 1; background: transparent; color: var(--muted); border-color: var(--line); }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.settings { margin-top: 22px; padding: 24px 28px; border: 1px solid var(--line); border-radius: 18px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+h2 { margin: 0; font-size: 17px; font-weight: 650; }
+.section-heading span { color: var(--muted); font-size: 12px; }
+.settings-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.input-wrap { position: relative; }
+.input-wrap input { width: 100%; height: 48px; border: 1px solid var(--line); border-radius: 8px; background: var(--field); color: var(--text); font: inherit; font-size: 17px; padding: 10px 72px 10px 12px; }
+.input-wrap span { position: absolute; right: 12px; top: 14px; font-size: 12px; color: var(--muted); pointer-events: none; }
+input:disabled { opacity: .65; }
+.hint { margin: 12px 0 20px; font-size: 12px; color: var(--muted); }
+.final-age { display: flex; justify-content: space-between; gap: 15px; border-top: 1px solid var(--line); padding-top: 18px; font-size: 14px; }
+.final-age strong { color: var(--accent); text-align: right; }
+.footer { text-align: center; padding: 18px 0 24px; color: var(--muted); font-size: 12px; }
+.install-button { display: inline-block; background: transparent; color: var(--accent); min-height: 44px; font-size: 12px; padding: 8px; }
+.copyright { margin-top: 16px; font-size: 11px; }
+.copyright a { margin-left: 12px; color: var(--muted); }
+.notice { padding: 15px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
+@media (max-width: 560px) {
+    body { padding: 0 16px; }
+    .header { min-height: 72px; }
+    .intro { padding: 26px 0 22px; }
+    .intro > p:last-child { font-size: 13px; }
+    .clock { padding: 24px 18px; border-radius: 18px; }
+    .age { letter-spacing: -.7px; }
+    .settings { padding: 20px 18px; }
+    .section-heading span { display: none; }
+    .settings-row { grid-template-columns: 1fr; gap: 14px; }
+    .input-group { display: grid; grid-template-columns: 1fr 135px; gap: 12px; align-items: center; }
+    .input-group label { margin: 0; }
+    .progress-info span { display: flex; flex-direction: column; gap: 3px; }
+    .progress-info b { margin-left: 0; }
+    .progress-info span:first-child { text-align: left; }
+    .progress-info span:last-child { text-align: right; }
+    button { padding: 12px 10px; }
 }
-
-/* Основные стили */
-:root {
-    --primary-color: #4CAF50;
-    --background-color: #ffffff;
-    --text-color: #333333;
-    --clock-background: #f5f5f5;
-    --border-color: #dddddd;
-}
-
-[data-theme="dark"] {
-    --primary-color: #66BB6A;
-    --background-color: #1a1a1a;
-    --text-color: #ffffff;
-    --clock-background: #2d2d2d;
-    --border-color: #404040;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: var(--background-color);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.clock-container {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.clock {
-    background-color: var(--clock-background);
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.time {
-    font-size: 3rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-}
-
-.age {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.emoji {
-    font-size: 4rem;
-    margin-top: 1rem;
-}
-
-.settings {
-    background-color: var(--clock-background);
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-h2 {
-    margin-bottom: 1rem;
-    color: #333;
-    text-align: center;
-}
-
-.settings-row {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.input-group {
-    flex: 1;
-}
-
-.final-age {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background-color: var(--clock-background);
-    border-radius: 4px;
-    text-align: center;
-}
-
-.final-age label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
-    font-weight: bold;
-}
-
-#finalAgeDisplay {
-    font-size: 1.5rem;
-    color: var(--text-color);
-    font-weight: bold;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #666;
-}
-
-input[type="number"] {
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--background-color);
-    color: var(--text-color);
-}
-
-.buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-#startButton {
-    background-color: #4CAF50;
-    color: white;
-}
-
-#startButton:hover {
-    background-color: #45a049;
-}
-
-#resetButton {
-    background-color: #f44336;
-    color: white;
-}
-
-#resetButton:hover {
-    background-color: #d32f2f;
-}
-
-.footer {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-    text-align: center;
-}
-
-.description {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.copyright {
-    margin-top: 1rem;
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.copyright a {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.copyright a:hover {
-    text-decoration: underline;
-}
-
-/* Стили для переключателя темы */
-.theme-switch-wrapper {
-    display: flex;
-    align-items: center;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
-.theme-switch {
-    display: inline-block;
-    height: 34px;
-    position: relative;
-    width: 60px;
-    margin-right: 10px;
-}
-
-.theme-switch input {
-    display: none;
-}
-
-.slider {
-    background-color: #ccc;
-    bottom: 0;
-    cursor: pointer;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    transition: .4s;
-}
-
-.slider:before {
-    background-color: #fff;
-    bottom: 4px;
-    content: "";
-    height: 26px;
-    left: 4px;
-    position: absolute;
-    transition: .4s;
-    width: 26px;
-}
-
-input:checked + .slider {
-    background-color: var(--primary-color);
-}
-
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
-
-.slider.round {
-    border-radius: 34px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-/* Стили для прогресс-бара */
-.progress-container {
-    width: 100%;
-    height: 8px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 4px;
-    margin: 20px 0;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: var(--primary-color);
-    width: 0%;
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    text-align: center;
-    font-size: 14px;
-    color: var(--text-color);
-    margin-top: 5px;
-}
-
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-    font-size: 14px;
-    color: var(--text-color);
-    padding: 0 5px;
-}
-
-.progress-info span {
-    flex: 1;
-    text-align: center;
-}
-
-#elapsedTime {
-    text-align: left;
-}
-
-#remainingTime {
-    text-align: right;
-}
-
-#progressText {
-    font-weight: bold;
-}
-
-/* Адаптивность для мобильных устройств */
-@media screen and (max-width: 768px) {
-    .container {
-        max-width: 100%;
-        padding: 15px;
-        margin: 0;
-        box-shadow: none;
-    }
-    
-    .theme-switch-wrapper {
-        top: 10px;
-        right: 10px;
-    }
-    
-    h2 {
-        font-size: 1.5rem;
-        margin-bottom: 15px;
-    }
-    
-    .emoji {
-        font-size: 3rem;
-    }
-    
-    .settings-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .input-group {
-        width: 100%;
-    }
-    
-    .progress-info {
-        font-size: 0.9rem;
-    }
-    
-    .buttons {
-        flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
-    }
-    
-    #startButton, #resetButton {
-        width: 48%;
-        padding: 12px;
-        font-size: 1rem;
-    }
-    
-    .time {
-        font-size: 2.5rem;
-    }
-    
-    .age {
-        font-size: 1.3rem;
-    }
-    
-    #finalAgeDisplay {
-        font-size: 1.3rem;
-    }
-    
-    .description {
-        font-size: 0.8rem;
-    }
-    
-    .footer {
-        margin-top: 1.5rem;
-    }
-    
-    .install-button {
-        width: 100%;
-        padding: 15px;
-        font-size: 1.1rem;
-    }
-}
-
-/* Для очень маленьких экранов */
-@media screen and (max-width: 480px) {
-    .progress-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .emoji {
-        font-size: 2.5rem;
-    }
-    
-    .time {
-        font-size: 2rem;
-    }
-    
-    body {
-        padding: 10px;
-    }
-    
-    .clock, .settings {
-        padding: 15px;
-    }
-    
-    .theme-switch-wrapper em {
-        display: none;
-    }
-    
-    .copyright {
-        font-size: 0.8rem;
-    }
-}
-
-/* Стили для кнопки установки */
-.install-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 10px auto 20px;
-    display: block;
-    font-size: 1rem;
-    transition: all 0.3s;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.install-button:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.install-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-} 
+@media (prefers-reduced-motion: reduce) { *, *:before { transition: none !important; } }

@@ -20,7 +20,7 @@
     "web-app-manifest-512x512.png"
   ],
   "scripts": {
-    "test": "echo \"No tests configured\"",
+    "test": "node --test",
     "prepublishOnly": "npm pack --dry-run"
   },
   "repository": {
@@ -39,8 +39,5 @@
     "timer",
     "age",
     "pwa"
-  ],
-  "dependencies": {
-    "dayjs": "^1.11.13"
-  }
+  ]
 }

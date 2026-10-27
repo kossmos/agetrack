@@ -2,29 +2,29 @@
   "name": "Agetrack",
   "short_name": "Agetrack",
   "description": "Таймер возраста для игры Денежный поток",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "background_color": "#f5f5f0",
+  "theme_color": "#236343",
   "icons": [
     {
-      "src": "/favicon-96x96.png",
-      "sizes": "96x96",
+      "src": "web-app-manifest-192x192.png",
+      "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "web-app-manifest-512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ],
-  "categories": ["utilities", "games", "productivity"],
+  "categories": [
+    "utilities",
+    "games",
+    "productivity"
+  ],
   "lang": "ru",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "scope": "./"
 }

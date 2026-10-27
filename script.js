@@ -1,242 +1,132 @@
-let timer;
-let startTime;
-let isRunning = false;
-let elapsedTime = 0;
+const defaults = { startAge: 20, yearsPerHour: 15, gameHours: 3 };
+const limits = { startAge: [0, 120], yearsPerHour: [1, 100], gameHours: [0.25, 24] };
+const $ = id => document.getElementById(id);
+const fields = Object.keys(defaults);
+let state = { settings: { ...defaults }, elapsed: 0, startedAt: null };
+let storageAvailable = true;
 
-dayjs.extend(dayjs_plugin_duration);
-
-const startButton = document.getElementById('startButton');
-const resetButton = document.getElementById('resetButton');
-const timeDisplay = document.querySelector('.time');
-const currentAgeDisplay = document.getElementById('currentAge');
-const ageEmoji = document.getElementById('ageEmoji');
-const finalAgeDisplay = document.getElementById('finalAgeDisplay');
-const progressBar = document.getElementById('progressBar');
-const progressText = document.getElementById('progressText');
-const elapsedTimeDisplay = document.getElementById('elapsedTime');
-const remainingTimeDisplay = document.getElementById('remainingTime');
-const themeSwitch = document.getElementById('checkbox');
-const INPUT_DEFAULTS = {
-    startAge: 20,
-    yearsPerHour: 15,
-    gameHours: 3
-};
-
-function getSafeNumberInputValue(id) {
-    const input = document.getElementById(id);
-    const fallback = INPUT_DEFAULTS[id] ?? 0;
-    const min = input.min === '' ? -Infinity : Number(input.min);
-    const max = input.max === '' ? Infinity : Number(input.max);
-    const rawValue = Number(input.value);
-
-    let value = Number.isFinite(rawValue) ? Math.floor(rawValue) : fallback;
-    value = Math.max(min, Math.min(max, value));
-
-    if (!Number.isFinite(value)) {
-        return fallback;
+function readStorage(key) {
+    try { return localStorage.getItem(key); } catch { storageAvailable = false; return null; }
+}
+function writeStorage(key, value) {
+    try { localStorage.setItem(key, value); } catch { storageAvailable = false; }
+}
+function normalize(id, value) {
+    const number = value === '' ? NaN : Number(value);
+    const [min, max] = limits[id];
+    const safe = Number.isFinite(number) ? number : defaults[id];
+    const rounded = id === 'gameHours' ? Math.round(safe * 4) / 4 : Math.round(safe);
+    return Math.min(max, Math.max(min, rounded));
+}
+function save() { writeStorage('agetrack-session-v1', JSON.stringify(state)); }
+function totalTime() { return state.settings.gameHours * 3600000; }
+function elapsedAt(now = Date.now()) {
+    return Math.min(totalTime(), Math.max(0, state.elapsed +
+        (state.startedAt === null ? 0 : Math.max(0, now - state.startedAt))));
+}
+function word(number, one, few, many) {
+    return number % 100 >= 11 && number % 100 <= 14 ? many :
+        number % 10 === 1 ? one : number % 10 >= 2 && number % 10 <= 4 ? few : many;
+}
+function ageString(months) {
+    const years = Math.floor(months / 12);
+    const remainder = months % 12;
+    return `${years} ${word(years, 'год', 'года', 'лет')}` +
+        (remainder ? ` ${remainder} ${word(remainder, 'месяц', 'месяца', 'месяцев')}` : '');
+}
+function formatTime(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000);
+    return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60]
+        .map(value => String(value).padStart(2, '0')).join(':');
+}
+function render() {
+    const elapsed = elapsedAt();
+    const completed = elapsed >= totalTime();
+    if (completed && state.startedAt !== null) {
+        state.elapsed = totalTime();
+        state.startedAt = null;
+        save();
     }
-
-    return value;
+    const running = state.startedAt !== null;
+    const active = running || elapsed > 0;
+    const months = state.settings.startAge * 12 + Math.floor(elapsed / 3600000 * state.settings.yearsPerHour * 12);
+    const progress = completed ? 100 : Math.min(99, Math.floor(elapsed / totalTime() * 100));
+    $('currentAge').textContent = ageString(months);
+    $('ageEmoji').textContent = months < 360 ? '🧑🏻 👩🏻' : months < 720 ? '👨🏻 👩🏻' : '👴🏻 👵🏻';
+    $('timeDisplay').textContent = formatTime(elapsed);
+    $('remainingTime').textContent = formatTime(Math.ceil((totalTime() - elapsed) / 1000) * 1000);
+    $('elapsedTime').textContent = formatTime(elapsed);
+    $('finalAgeDisplay').textContent = ageString(Math.round((state.settings.startAge + state.settings.yearsPerHour * state.settings.gameHours) * 12));
+    $('progressBar').style.width = `${elapsed / totalTime() * 100}%`;
+    $('progressTrack').setAttribute('aria-valuenow', String(progress));
+    $('progressText').textContent = `${progress}%`;
+    $('startButton').textContent = completed ? 'Игра завершена' : running ? 'Пауза' : active ? 'Продолжить' : 'Начать игру';
+    $('startButton').disabled = completed;
+    $('resetButton').disabled = !active;
+    const status = completed ? 'Игра завершена' : running ? 'Игра идёт' : active ? 'На паузе' : 'Готовы начать?';
+    if ($('status').textContent !== status) $('status').textContent = status;
+    $('status').dataset.state = completed ? 'complete' : running ? 'running' : 'idle';
+    $('settingsHint').textContent = active ? 'Чтобы изменить параметры, сбросьте игру.' : 'Настройте темп вашей игры. 15 минут = 0,25 часа.';
+    $('storageNotice').hidden = storageAvailable;
+    fields.forEach(id => { $(id).disabled = active; });
+    document.title = running ? `${ageString(months)} · Agetrack` : 'Agetrack — время вашей игры';
 }
 
-function normalizeNumberInput(id) {
-    const input = document.getElementById(id);
-    const normalized = getSafeNumberInputValue(id);
-    const current = Number(input.value);
-    const isDifferent = !Number.isFinite(current) || Math.floor(current) !== normalized;
-
-    if (isDifferent) {
-        input.value = String(normalized);
+try {
+    const saved = JSON.parse(readStorage('agetrack-session-v1'));
+    if (saved && saved.settings && Number.isFinite(saved.elapsed) && saved.elapsed >= 0 &&
+        (saved.startedAt === null || (Number.isFinite(saved.startedAt) && saved.startedAt >= 0))) {
+        state.settings = Object.fromEntries(fields.map(id => [id, normalize(id, saved.settings[id])]));
+        state.elapsed = Math.min(saved.elapsed, totalTime());
+        state.startedAt = saved.startedAt;
     }
-
-    return normalized;
-}
-
-// Функция для правильного склонения возраста
-function getAgeString(years, months) {
-    let yearWord = 'лет';
-    if (years % 10 === 1 && years % 100 !== 11) {
-        yearWord = 'год';
-    } else if (years % 10 >= 2 && years % 10 <= 4 && (years % 100 < 10 || years % 100 >= 20)) {
-        yearWord = 'года';
-    }
-
-    let monthWord = 'месяцев';
-    if (months % 10 === 1 && months % 100 !== 11) {
-        monthWord = 'месяц';
-    } else if (months % 10 >= 2 && months % 10 <= 4 && (months % 100 < 10 || months % 100 >= 20)) {
-        monthWord = 'месяца';
-    }
-
-    return `${years} ${yearWord} ${months} ${monthWord}`;
-}
-
-// Функция для форматирования времени
-function formatTime(hours, minutes, seconds) {
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-// Функция для сброса таймера
-function resetTimer() {
-    clearInterval(timer);
-    isRunning = false;
-    elapsedTime = 0;
-    timeDisplay.textContent = '00:00:00';
-    currentAgeDisplay.textContent = '-';
-    ageEmoji.textContent = '🧑🏻👩🏻';
-    startButton.textContent = 'Старт';
-    progressBar.style.width = '0%';
-    progressText.textContent = '0%';
-    elapsedTimeDisplay.textContent = '00:00:00';
-    const gameHours = getSafeNumberInputValue('gameHours');
-    remainingTimeDisplay.textContent = formatTime(gameHours, 0, 0);
-}
-
-// Функция для расчета финального возраста
-function calculateFinalAge() {
-    const startAge = getSafeNumberInputValue('startAge');
-    const yearsPerHour = getSafeNumberInputValue('yearsPerHour');
-    const gameHours = getSafeNumberInputValue('gameHours');
-    
-    const finalAge = startAge + (yearsPerHour * gameHours);
-    finalAgeDisplay.textContent = getAgeString(finalAge, 0);
-}
-
-// Обновляем финальный возраст при изменении параметров
-document.getElementById('startAge').addEventListener('input', calculateFinalAge);
-document.getElementById('yearsPerHour').addEventListener('input', calculateFinalAge);
-document.getElementById('gameHours').addEventListener('input', calculateFinalAge);
-
-// Инициализируем финальный возраст при загрузке
-calculateFinalAge();
-
-// Функция для обновления прогресс-бара
-function updateProgress(hours, minutes, seconds) {
-    const gameHours = getSafeNumberInputValue('gameHours');
-    const totalMilliseconds = gameHours * 3600000; // общее время в миллисекундах
-    const currentMilliseconds = hours * 3600000 + minutes * 60000 + seconds * 1000; // текущее время в миллисекундах
-    const progress = totalMilliseconds > 0 ? (currentMilliseconds / totalMilliseconds) * 100 : 0;
-    
-    // Обновляем прогресс-бар
-    progressBar.style.width = `${Math.min(progress, 100)}%`;
-    progressText.textContent = `${Math.round(Math.min(progress, 100))}%`;
-    
-    // Обновляем прошедшее время
-    elapsedTimeDisplay.textContent = formatTime(hours, minutes, seconds);
-    
-    // Обновляем оставшееся время
-    const remainingMilliseconds = Math.max(0, totalMilliseconds - currentMilliseconds);
-    const remainingHours = Math.floor(remainingMilliseconds / 3600000);
-    const remainingMinutes = Math.floor((remainingMilliseconds % 3600000) / 60000);
-    const remainingSecs = Math.floor((remainingMilliseconds % 60000) / 1000);
-    remainingTimeDisplay.textContent = formatTime(remainingHours, remainingMinutes, remainingSecs);
-}
-
-// Обработчик переключения темы
-themeSwitch.addEventListener('change', function() {
-    if (this.checked) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('theme', 'light');
-    }
-});
-
-// Проверка сохранённой темы при загрузке
-const currentTheme = localStorage.getItem('theme');
-if (currentTheme) {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    if (currentTheme === 'dark') {
-        themeSwitch.checked = true;
-    }
-}
-
-function updateTime() {
-    const diff = Math.max(0, dayjs().diff(startTime) + elapsedTime);
-    const duration = dayjs.duration(diff);
-    const hours = Math.floor(duration.asHours());
-    const minutes = duration.minutes();
-    const seconds = duration.seconds();
-
-    timeDisplay.textContent = formatTime(hours, minutes, seconds);
-
-    // Обновляем прогресс
-    updateProgress(hours, minutes, seconds);
-
-    // Обновляем возраст
-    const startAge = getSafeNumberInputValue('startAge');
-    const yearsPerHour = getSafeNumberInputValue('yearsPerHour');
-    const gameHours = getSafeNumberInputValue('gameHours');
-
-    // Новый корректный расчёт возраста
-    const totalGameYears = (diff / 3600000) * yearsPerHour;
-    const totalElapsedMonths = Math.max(0, Math.floor(totalGameYears * 12));
-    const totalYears = startAge + Math.floor(totalElapsedMonths / 12);
-    const totalMonths = totalElapsedMonths % 12;
-
-    currentAgeDisplay.textContent = getAgeString(totalYears, totalMonths);
-
-    // Обновляем эмодзи в зависимости от возраста
-    if (totalYears < 30) {
-        ageEmoji.textContent = '🧑🏻👩🏻'; // Молодые люди
-    } else if (totalYears < 60) {
-        ageEmoji.textContent = '👨🏻👩🏻'; // Взрослые
-    } else {
-        ageEmoji.textContent = '👴🏻👵🏻'; // Пожилые
-    }
-
-    // Проверяем, не закончилось ли время
-    if (hours >= gameHours) {
-        clearInterval(timer);
-        isRunning = false;
-        startButton.textContent = 'Старт';
-    }
-}
-
-startButton.addEventListener('click', () => {
-    if (!isRunning) {
-        startTime = dayjs();
-        timer = setInterval(updateTime, 1000);
-        isRunning = true;
-        startButton.textContent = 'Пауза';
-    } else {
-        if (confirm('Вы уверены, что хотите поставить таймер на паузу?')) {
-            clearInterval(timer);
-            elapsedTime += dayjs().diff(startTime);
-            isRunning = false;
-            startButton.textContent = 'Старт';
-        }
-    }
-});
-
-resetButton.addEventListener('click', function() {
-    if (confirm('Вы уверены, что хотите сбросить таймер? Это действие нельзя отменить.')) {
-        resetTimer();
-    }
-});
-
-['startAge', 'yearsPerHour', 'gameHours'].forEach(id => {
-    const input = document.getElementById(id);
-    input.addEventListener('blur', () => {
-        normalizeNumberInput(id);
-        calculateFinalAge();
-        if (!isRunning) {
-            remainingTimeDisplay.textContent = formatTime(getSafeNumberInputValue('gameHours'), 0, 0);
-        }
+} catch { /* A damaged save must not prevent a new game. */ }
+fields.forEach(id => {
+    $(id).value = state.settings[id];
+    $(id).addEventListener('change', () => {
+        if (state.startedAt !== null || state.elapsed > 0) return;
+        state.settings[id] = normalize(id, $(id).value);
+        $(id).value = state.settings[id];
+        save();
+        render();
     });
 });
-
-// Регистрация Service Worker для PWA
+$('startButton').addEventListener('click', () => {
+    if (elapsedAt() >= totalTime()) return;
+    if (state.startedAt === null) {
+        state.startedAt = Date.now();
+    } else {
+        state.elapsed = elapsedAt();
+        state.startedAt = null;
+    }
+    save();
+    render();
+});
+$('resetButton').addEventListener('click', () => {
+    if (!confirm('Сбросить текущую игру? Возраст и таймер вернутся к началу.')) return;
+    state.elapsed = 0;
+    state.startedAt = null;
+    save();
+    render();
+});
+const themeSwitch = $('checkbox');
+const savedTheme = readStorage('theme');
+themeSwitch.checked = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', themeSwitch.checked ? 'dark' : 'light');
+}
+applyTheme();
+themeSwitch.addEventListener('change', () => {
+    applyTheme();
+    writeStorage('theme', themeSwitch.checked ? 'dark' : 'light');
+    render();
+});
+render();
+setInterval(render, 250);
+document.addEventListener('visibilitychange', render);
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => {
-                console.log('ServiceWorker зарегистрирован успешно:', registration.scope);
-            })
-            .catch(error => {
-                console.log('Ошибка регистрации ServiceWorker:', error);
-            });
+        navigator.serviceWorker.register('./service-worker.js').catch(error => console.warn('Service Worker:', error));
     });
 }
 
