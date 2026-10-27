@@ -1,78 +1,74 @@
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const vm = require('node:vm');
-const fs = require('node:fs');
-const source = fs.readFileSync('script.js', 'utf8');
-function app(storage = new Map(), denied = false) {
-    let now = 1000000;
-    const elements = new Map();
-    const get = id => {
-        if (!elements.has(id)) elements.set(id, { style: {}, dataset: {}, listeners: {}, setAttribute() {},
-            addEventListener(type, listener) { this.listeners[type] = listener; } });
-        return elements.get(id);
-    };
-    const context = vm.createContext({
-        document: { getElementById: get, documentElement: { setAttribute() {} }, addEventListener() {} },
-        window: { matchMedia: () => ({ matches: false }), navigator: {}, addEventListener() {} },
-        navigator: {}, localStorage: {
-            getItem(key) { if (denied) throw Error('denied'); return storage.get(key) ?? null; },
-            setItem(key, value) { if (denied) throw Error('denied'); storage.set(key, value); }
-        }, Date: { now: () => now }, setInterval() {}, confirm: () => true, console
-    });
-    vm.runInContext(source, context);
-    return { get, storage, click: id => get(id).listeners.click(),
-        advance(ms) { now += ms; vm.runInContext('render()', context); },
-        change(id, value) { get(id).value = value; get(id).listeners.change(); } };
-}
-test('initial age, duration and fractional game settings', () => {
-    const a = app();
-    assert.equal(a.get('currentAge').textContent, '20 лет');
-    assert.equal(a.get('remainingTime').textContent, '03:00:00');
-    a.change('gameHours', '0.25');
-    assert.equal(a.get('remainingTime').textContent, '00:15:00');
-    assert.equal(a.get('finalAgeDisplay').textContent, '23 года 9 месяцев');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+    createSession,
+    normalize,
+    elapsedAt,
+    totalTime,
+    toggle,
+    settle,
+    reset,
+    ageString,
+    formatTime,
+} from '../src/timer.js';
+test('pause and resume exclude paused time without mutating input', () => {
+    const initial = createSession();
+    const running = toggle(initial, 1000);
+    const paused = toggle(running, 61000);
+    assert.equal(elapsedAt(paused, 999000), 60000);
+    const resumed = toggle(paused, 1000000);
+    assert.equal(elapsedAt(resumed, 1060000), 120000);
+    assert.equal(initial.startedAt, null);
 });
-test('pause excludes paused time; resume retains elapsed time', () => {
-    const a = app(); a.click('startButton'); a.advance(60000); a.click('startButton');
-    a.advance(300000);
-    assert.equal(a.get('timeDisplay').textContent, '00:01:00');
-    a.click('startButton'); a.advance(60000);
-    assert.equal(a.get('timeDisplay').textContent, '00:02:00');
-    assert.equal(a.get('startAge').disabled, true);
+test('completion is exact, idempotent and cannot restart without reset', () => {
+    const initial = createSession();
+    initial.settings.gameHours = 0.25;
+    const running = toggle(initial, 1000);
+    assert.equal(elapsedAt(running, 900999), 899999);
+    const complete = settle(running, 901000);
+    assert.equal(complete.elapsed, 900000);
+    assert.equal(complete.startedAt, null);
+    assert.deepEqual(toggle(complete, 99999999), complete);
+    assert.equal(elapsedAt(running, 99999999), 900000);
+    assert.deepEqual(reset(complete), initial);
 });
-test('running session survives reload and counts time away', () => {
-    const a = app(); a.click('startButton');
-    const b = app(a.storage); b.advance(3600000);
-    assert.equal(b.get('timeDisplay').textContent, '01:00:00');
-    assert.equal(b.get('currentAge').textContent, '35 лет');
+test('backward wall clock changes cannot produce negative elapsed time', () => {
+    assert.equal(elapsedAt(toggle(createSession(), 10000), 5000), 0);
 });
-test('completion clamps time and age even after a long suspended tab', () => {
-    const a = app(); a.change('gameHours', '0.25'); a.click('startButton'); a.advance(86400000);
-    assert.equal(a.get('timeDisplay').textContent, '00:15:00');
-    assert.equal(a.get('currentAge').textContent, '23 года 9 месяцев');
-    assert.equal(a.get('remainingTime').textContent, '00:00:00');
-    assert.equal(a.get('startButton').disabled, true);
-    const b = app(a.storage);
-    assert.equal(b.get('status').textContent, 'Игра завершена');
-    b.click('resetButton');
-    assert.equal(b.get('currentAge').textContent, '20 лет');
-    assert.equal(b.get('startAge').disabled, false);
+test('settings normalize empty, nonfinite, fractional and out-of-range values', () => {
+    for (const value of ['', 'abc', Infinity, NaN])
+        assert.equal(normalize('gameHours', value), 3);
+    assert.equal(normalize('gameHours', 0.3), 0.25);
+    assert.equal(normalize('gameHours', 500), 24);
+    assert.equal(normalize('startAge', -1), 0);
+    assert.equal(normalize('yearsPerHour', 0), 1);
+    assert.equal(totalTime(createSession()), 10800000);
 });
-test('paused session survives reload', () => {
-    const a = app(); a.click('startButton'); a.advance(10000); a.click('startButton');
-    const b = app(a.storage); b.advance(100000);
-    assert.equal(b.get('timeDisplay').textContent, '00:00:10');
-    assert.equal(b.get('startButton').textContent, 'Продолжить');
+test('Russian age forms and time beyond 24 hours', () => {
+    for (const [years, expected] of [
+        [1, '1 год'],
+        [2, '2 года'],
+        [11, '11 лет'],
+        [21, '21 год'],
+        [22, '22 года'],
+        [111, '111 лет'],
+    ])
+        assert.equal(ageString(years * 12), expected);
+    assert.equal(ageString(12 + 1), '1 год 1 месяц');
+    assert.equal(ageString(12 + 2), '1 год 2 месяца');
+    assert.equal(ageString(12 + 11), '1 год 11 месяцев');
+    assert.equal(formatTime(90061000), '25:01:01');
 });
-test('invalid settings and damaged storage recover safely', () => {
-    const a = app(new Map([['agetrack-session-v1', '{broken']]));
-    a.change('gameHours', ''); assert.equal(a.get('gameHours').value, 3);
-    a.change('startAge', -20); assert.equal(a.get('startAge').value, 0);
-    a.change('yearsPerHour', 999999); assert.equal(a.get('yearsPerHour').value, 100);
-    a.change('gameHours', .3); assert.equal(a.get('gameHours').value, .25);
-});
-test('blocked storage does not break timer', () => {
-    const a = app(new Map(), true); a.click('startButton'); a.advance(1000);
-    assert.equal(a.get('timeDisplay').textContent, '00:00:01');
-    assert.equal(a.get('storageNotice').hidden, false);
+
+test('snapshot age and progress agree at month and completion boundaries', async () => {
+    const { snapshot } = await import('../src/timer.js');
+    const state = toggle(createSession(), 1000);
+    assert.equal(snapshot(state, 20999).months, 240);
+    assert.equal(snapshot(state, 21000).months, 241);
+    assert.equal(snapshot(state, 10800999).progress, 99);
+    const finished = snapshot(state, 10801000);
+    assert.equal(finished.months, finished.finalMonths);
+    assert.equal(finished.progress, 100);
+    assert.equal(finished.remaining, 0);
+    assert.equal(finished.running, false);
 });

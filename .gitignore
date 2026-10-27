@@ -19,3 +19,7 @@ dist/
 build/
 *.zip
 *.tar.gz
+
+# Browser test artifacts
+playwright-report/
+test-results/

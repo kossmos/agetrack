@@ -1,43 +1,64 @@
 {
-  "name": "agetrack",
-  "version": "1.0.0",
-  "description": "Таймер возраста для игры \"Денежный поток\" (Cashflow). Визуализирует старение персонажа в процессе игры.",
-  "main": "script.js",
-  "files": [
-    "index.html",
-    "script.js",
-    "styles.css",
-    "service-worker.js",
-    "site.webmanifest",
-    "README.md",
-    "LICENSE",
-    "favicon.svg",
-    "favicon-96x96.png",
-    "favicon.ico",
-    "favicon.png",
-    "apple-touch-icon.png",
-    "web-app-manifest-192x192.png",
-    "web-app-manifest-512x512.png"
-  ],
-  "scripts": {
-    "test": "node --test",
-    "prepublishOnly": "npm pack --dry-run"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kossmos/agetrack.git"
-  },
-  "author": "Кравчук Юрий",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/kossmos/agetrack/issues"
-  },
-  "homepage": "https://github.com/kossmos/agetrack#readme",
-  "keywords": [
-    "cashflow",
-    "agetrack",
-    "timer",
-    "age",
-    "pwa"
-  ]
+    "name": "agetrack",
+    "version": "1.0.0",
+    "description": "Таймер возраста для игры \"Денежный поток\" (Cashflow). Визуализирует старение персонажа в процессе игры.",
+    "main": "script.js",
+    "files": [
+        "index.html",
+        "script.js",
+        "styles.css",
+        "service-worker.js",
+        "site.webmanifest",
+        "README.md",
+        "LICENSE",
+        "favicon.svg",
+        "favicon-96x96.png",
+        "favicon.ico",
+        "favicon.png",
+        "apple-touch-icon.png",
+        "web-app-manifest-192x192.png",
+        "web-app-manifest-512x512.png",
+        "src/"
+    ],
+    "scripts": {
+        "test": "node --test tests/*.test.js",
+        "prepublishOnly": "npm pack --dry-run",
+        "test:e2e": "playwright test",
+        "typecheck": "tsc && tsc -p tsconfig.worker.json",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "cache:update": "node tools/update-cache.js",
+        "cache:check": "node tools/update-cache.js --check",
+        "check": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run cache:check"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kossmos/agetrack.git"
+    },
+    "author": "Кравчук Юрий",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/kossmos/agetrack/issues"
+    },
+    "homepage": "https://github.com/kossmos/agetrack#readme",
+    "keywords": [
+        "cashflow",
+        "agetrack",
+        "timer",
+        "age",
+        "pwa"
+    ],
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@playwright/test": "^1.64.1",
+        "eslint": "^10.13.0",
+        "globals": "^17.13.0",
+        "prettier": "^3.9.10",
+        "typescript": "^7.0.2"
+    },
+    "type": "module",
+    "engines": {
+        "node": ">=22.14"
+    }
 }
